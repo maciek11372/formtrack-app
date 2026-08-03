@@ -15,6 +15,7 @@ import {
   Footprints,
   Home,
   LogOut,
+  MoreHorizontal,
   Pencil,
   Pill,
   Plus,
@@ -30,7 +31,16 @@ import {
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
+  Cell,
+  ComposedChart,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -185,9 +195,9 @@ type MealForm = {
 
 type GoalForm = {
   calories_target: string;
-  protein_target: string;
-  fat_target: string;
-  carbs_target: string;
+  protein_percent: string;
+  fat_percent: string;
+  carbs_percent: string;
   include_activity_calories: boolean;
 };
 
@@ -452,6 +462,7 @@ export default function FormTrackApp() {
   const router = useRouter();
 
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [measurements, setMeasurements] = useState<DbMeasurement[]>([]);
   const [activities, setActivities] = useState<DbActivity[]>([]);
@@ -961,7 +972,14 @@ export default function FormTrackApp() {
       />
     ),
 
-    stats: <Stats measurements={measurements} />,
+    stats: (
+      <Stats
+        measurements={measurements}
+        activities={activities}
+        meals={meals}
+        goal={nutritionGoal}
+      />
+    ),
 
     profile: <ProfileView profile={profile} onLogout={logout} />,
   }[tab];
@@ -1020,23 +1038,91 @@ export default function FormTrackApp() {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex overflow-x-auto border-t border-emerald-900/60 bg-[#07120c]/95 p-2 backdrop-blur lg:hidden">
-        {tabs.map(([id, label, Icon]) => (
+      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-emerald-900/60 bg-[#07120c]/95 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+        <div className="grid grid-cols-5 gap-1">
+          {tabs.slice(0, 4).map(([id, label, Icon]) => (
+            <button
+              type="button"
+              key={id}
+              onClick={() => {
+                setTab(id);
+                setMobileMoreOpen(false);
+              }}
+              className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium ${
+                tab === id
+                  ? "bg-emerald-300 text-[#07120c]"
+                  : "text-slate-400"
+              }`}
+            >
+              <Icon size={20} />
+              <span className="w-full truncate text-center">{label}</span>
+            </button>
+          ))}
+
           <button
             type="button"
-            key={id}
-            onClick={() => setTab(id)}
-            className={`flex min-w-[78px] flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[11px] ${
-              tab === id
+            onClick={() => setMobileMoreOpen((open) => !open)}
+            className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium ${
+              mobileMoreOpen || ["supplements", "stats", "profile"].includes(tab)
                 ? "bg-emerald-300 text-[#07120c]"
                 : "text-slate-400"
             }`}
           >
-            <Icon size={20} />
-            {label}
+            <MoreHorizontal size={20} />
+            <span>Więcej</span>
           </button>
-        ))}
+        </div>
       </nav>
+
+      {mobileMoreOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <button
+            type="button"
+            aria-label="Zamknij menu"
+            className="absolute inset-0 bg-black/55"
+            onClick={() => setMobileMoreOpen(false)}
+          />
+
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl border-t border-emerald-800/60 bg-[#091a11] px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-emerald-900" />
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <div className="text-lg font-black">Więcej</div>
+                <div className="muted text-xs">Pozostałe sekcje aplikacji</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMoreOpen(false)}
+                className="rounded-xl border border-emerald-800/60 p-2 text-slate-300"
+                aria-label="Zamknij"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {tabs.slice(4).map(([id, label, Icon]) => (
+                <button
+                  type="button"
+                  key={id}
+                  onClick={() => {
+                    setTab(id);
+                    setMobileMoreOpen(false);
+                  }}
+                  className={`flex min-w-0 flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-sm font-bold ${
+                    tab === id
+                      ? "border-emerald-300 bg-emerald-300 text-[#07120c]"
+                      : "border-emerald-900/70 bg-emerald-950/40 text-slate-200"
+                  }`}
+                >
+                  <Icon size={24} />
+                  <span className="w-full truncate text-center">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {measurementModal.open && (
         <MeasurementModal
@@ -1095,6 +1181,320 @@ export default function FormTrackApp() {
         />
       )}
     </div>
+  );
+}
+
+
+type MeasurementChartKey =
+  | "weight"
+  | "waist_cm"
+  | "hips_cm"
+  | "chest_cm"
+  | "arm_cm"
+  | "thigh_cm"
+  | "body_fat_percentage";
+
+const measurementChartOptions: Array<{
+  key: MeasurementChartKey;
+  label: string;
+  unit: string;
+}> = [
+  { key: "weight", label: "Masa ciała", unit: "kg" },
+  { key: "waist_cm", label: "Talia", unit: "cm" },
+  { key: "hips_cm", label: "Biodra", unit: "cm" },
+  { key: "chest_cm", label: "Klatka", unit: "cm" },
+  { key: "arm_cm", label: "Ramię", unit: "cm" },
+  { key: "thigh_cm", label: "Udo", unit: "cm" },
+  { key: "body_fat_percentage", label: "Tkanka tłuszczowa", unit: "%" },
+];
+
+function shortDate(date: string) {
+  return new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+  }).format(new Date(`${date}T12:00:00`));
+}
+
+function getLastDays(count: number) {
+  const result: string[] = [];
+  const now = new Date();
+
+  for (let offset = count - 1; offset >= 0; offset -= 1) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - offset);
+    result.push(date.toISOString().slice(0, 10));
+  }
+
+  return result;
+}
+
+const chartTooltipStyle = {
+  background: "#0a1b12",
+  border: "1px solid #28523a",
+  borderRadius: 12,
+  color: "#ecfdf5",
+};
+
+function ChartEmpty({ text }: { text: string }) {
+  return (
+    <div className="grid h-64 place-items-center rounded-2xl border border-dashed border-emerald-900/70 bg-emerald-950/20 p-6 text-center">
+      <p className="muted max-w-sm text-sm">{text}</p>
+    </div>
+  );
+}
+
+function WeightTrendChart({
+  measurements,
+  compact = false,
+}: {
+  measurements: DbMeasurement[];
+  compact?: boolean;
+}) {
+  const data = measurements
+    .filter((measurement) => measurement.weight != null)
+    .slice(compact ? -12 : -30)
+    .map((measurement) => ({
+      date: shortDate(measurement.measured_at),
+      value: Number(measurement.weight),
+    }));
+
+  return (
+    <section className="card p-5 md:p-6">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-black">Trend masy ciała</h3>
+          <p className="muted mt-1 text-sm">
+            {compact ? "Ostatnie pomiary" : "Do 30 ostatnich pomiarów"}
+          </p>
+        </div>
+        <Weight size={20} className="text-emerald-300" />
+      </div>
+
+      {data.length < 2 ? (
+        <ChartEmpty text="Dodaj co najmniej dwa pomiary masy, aby zobaczyć trend." />
+      ) : (
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid stroke="#183123" vertical={false} />
+              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+              <YAxis
+                stroke="#789180"
+                fontSize={11}
+                domain={["dataMin - 2", "dataMax + 2"]}
+                width={48}
+              />
+              <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} kg`, "Masa"]} />
+              <Area
+                type="monotone"
+                dataKey="value"
+                name="Masa"
+                stroke="#78e993"
+                fill="#163c25"
+                strokeWidth={3}
+                activeDot={{ r: 5 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function WeeklyCaloriesChart({
+  meals,
+  goal,
+}: {
+  meals: DbMeal[];
+  goal: NutritionGoal | null;
+}) {
+  const target = Math.round(Number(goal?.calories_target ?? 2000));
+  const data = getLastDays(7).map((date) => ({
+    date: shortDate(date),
+    calories: Math.round(
+      meals
+        .filter((meal) => meal.meal_date === date)
+        .reduce((sum, meal) => sum + Number(meal.calories ?? 0), 0)
+    ),
+    target,
+  }));
+  const hasMeals = data.some((item) => item.calories > 0);
+
+  return (
+    <section className="card p-5 md:p-6">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-black">Kalorie z 7 dni</h3>
+          <p className="muted mt-1 text-sm">Spożycie w porównaniu z celem dziennym</p>
+        </div>
+        <Salad size={20} className="text-emerald-300" />
+      </div>
+
+      {!hasMeals ? (
+        <ChartEmpty text="Dodaj posiłki, aby zobaczyć porównanie kalorii z ostatnich 7 dni." />
+      ) : (
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid stroke="#183123" vertical={false} />
+              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+              <YAxis stroke="#789180" fontSize={11} width={52} />
+              <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} kcal`]} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="calories" name="Spożyto" fill="#78e993" radius={[6, 6, 0, 0]} />
+              <Line type="monotone" dataKey="target" name="Cel" stroke="#fbbf24" strokeWidth={2} dot={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MacroDonutChart({
+  totals,
+  goal,
+}: {
+  totals: { protein: number; fat: number; carbs: number; calories: number };
+  goal: NutritionGoal | null;
+}) {
+  const data = [
+    { name: "Białko", value: Number(totals.protein.toFixed(1)), fill: "#78e993" },
+    { name: "Tłuszcze", value: Number(totals.fat.toFixed(1)), fill: "#fbbf24" },
+    { name: "Węglowodany", value: Number(totals.carbs.toFixed(1)), fill: "#60a5fa" },
+  ];
+  const hasData = data.some((item) => item.value > 0);
+
+  return (
+    <section className="card p-5 md:p-6">
+      <div className="mb-3">
+        <h3 className="text-lg font-black">Dzisiejsze makro</h3>
+        <p className="muted mt-1 text-sm">Podział spożytych gramów makroskładników</p>
+      </div>
+
+      {!hasData ? (
+        <ChartEmpty text="Dodaj posiłek z makro, aby zobaczyć dzisiejszy podział." />
+      ) : (
+        <div className="grid items-center gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={58}
+                  outerRadius={92}
+                  paddingAngle={3}
+                >
+                  {data.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} g`]} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="grid gap-2">
+            <NutritionMetric label="Białko" value={`${totals.protein.toFixed(1)} g`} target={goal?.protein_target != null ? `${goal.protein_target} g` : "brak celu"} />
+            <NutritionMetric label="Tłuszcze" value={`${totals.fat.toFixed(1)} g`} target={goal?.fat_target != null ? `${goal.fat_target} g` : "brak celu"} />
+            <NutritionMetric label="Węglowodany" value={`${totals.carbs.toFixed(1)} g`} target={goal?.carbs_target != null ? `${goal.carbs_target} g` : "brak celu"} />
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MeasurementTrendChart({ measurements }: { measurements: DbMeasurement[] }) {
+  const [metric, setMetric] = useState<MeasurementChartKey>("waist_cm");
+  const option = measurementChartOptions.find((item) => item.key === metric) ?? measurementChartOptions[0];
+  const data = measurements
+    .filter((measurement) => measurement[metric] != null)
+    .slice(-30)
+    .map((measurement) => ({
+      date: shortDate(measurement.measured_at),
+      value: Number(measurement[metric]),
+    }));
+
+  return (
+    <section className="card mb-5 p-5 md:p-6">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-black">Zmiana pomiarów</h3>
+          <p className="muted mt-1 text-sm">Wybierz parametr, który chcesz śledzić</p>
+        </div>
+        <label className="block min-w-44 text-sm">
+          <span className="sr-only">Rodzaj pomiaru</span>
+          <select value={metric} onChange={(event) => setMetric(event.target.value as MeasurementChartKey)}>
+            {measurementChartOptions.map((item) => (
+              <option key={item.key} value={item.key}>{item.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {data.length < 2 ? (
+        <ChartEmpty text={`Dodaj co najmniej dwa pomiary: ${option.label.toLowerCase()}.`} />
+      ) : (
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid stroke="#183123" vertical={false} />
+              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+              <YAxis stroke="#789180" fontSize={11} domain={["dataMin - 2", "dataMax + 2"]} width={48} />
+              <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} ${option.unit}`, option.label]} />
+              <Line type="monotone" dataKey="value" name={option.label} stroke="#78e993" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
+  const data = getLastDays(7).map((date) => {
+    const dayActivities = activities.filter((activity) => activity.activity_date === date);
+    return {
+      date: shortDate(date),
+      minutes: dayActivities.reduce((sum, activity) => sum + Number(activity.duration_minutes ?? 0), 0),
+      calories: dayActivities.reduce((sum, activity) => sum + Number(activity.calories_burned ?? 0), 0),
+    };
+  });
+  const hasData = data.some((item) => item.minutes > 0 || item.calories > 0);
+
+  return (
+    <section className="card p-5 md:p-6">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-black">Aktywność z 7 dni</h3>
+          <p className="muted mt-1 text-sm">Czas treningów i zarejestrowane kalorie</p>
+        </div>
+        <Dumbbell size={20} className="text-emerald-300" />
+      </div>
+
+      {!hasData ? (
+        <ChartEmpty text="Dodaj aktywność, aby zobaczyć tygodniowe podsumowanie." />
+      ) : (
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid stroke="#183123" vertical={false} />
+              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+              <YAxis stroke="#789180" fontSize={11} width={48} />
+              <Tooltip contentStyle={chartTooltipStyle} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="minutes" name="Minuty" fill="#78e993" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="calories" name="Kalorie" fill="#fbbf24" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -1285,6 +1685,11 @@ function Dashboard({
         />
       </div>
 
+      <div className="grid gap-6 xl:grid-cols-2">
+        <WeightTrendChart measurements={measurements} compact />
+        <WeeklyCaloriesChart meals={meals} goal={nutritionGoal} />
+      </div>
+
       <div className="grid items-stretch gap-6 xl:grid-cols-2">
         <section className="card flex h-full items-center p-5 md:p-6">
           <div className="flex w-full flex-wrap items-center justify-between gap-4">
@@ -1427,6 +1832,8 @@ function Activities({
           {error}
         </p>
       )}
+
+      <ActivityWeeklyChart activities={activities} />
 
       {activities.length === 0 ? (
         <Empty
@@ -1634,6 +2041,8 @@ function Measurements({
           {error}
         </p>
       )}
+
+      <MeasurementTrendChart measurements={measurements} />
 
       {measurements.length === 0 ? (
         <Empty
@@ -1900,6 +2309,11 @@ function Nutrition({
             : "Spalone kalorie nie zwiększają dziennego limitu."}
         </p>
       </section>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <MacroDonutChart totals={totals} goal={goal} />
+        <WeeklyCaloriesChart meals={meals} goal={goal} />
+      </div>
 
       {dayMeals.length === 0 ? (
         <Empty
@@ -2317,58 +2731,44 @@ function Supplements({
   );
 }
 
-function Stats({ measurements }: { measurements: DbMeasurement[] }) {
-  const data = measurements
-    .filter((measurement) => measurement.weight != null)
-    .map((measurement) => ({
-      date: measurement.measured_at.slice(5),
-      kg: measurement.weight,
-    }));
+function Stats({
+  measurements,
+  activities,
+  meals,
+  goal,
+}: {
+  measurements: DbMeasurement[];
+  activities: DbActivity[];
+  meals: DbMeal[];
+  goal: NutritionGoal | null;
+}) {
+  const hasAnyData =
+    measurements.length > 0 || activities.length > 0 || meals.length > 0;
 
-  if (data.length < 2) {
+  if (!hasAnyData) {
     return (
       <Empty
-        title="Za mało danych"
-        text="Dodaj co najmniej dwa pomiary masy, aby zobaczyć wykres."
+        title="Brak danych do statystyk"
+        text="Dodaj pomiary, aktywności lub posiłki, aby zobaczyć wykresy."
         icon={<BarChart3 size={28} />}
       />
     );
   }
 
   return (
-    <div className="card p-5">
-      <h2 className="mb-4 text-lg font-black">Zmiana masy ciała</h2>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-black">Twoje statystyki</h2>
+        <p className="muted mt-1 text-sm">
+          Najważniejsze trendy masy, obwodów, aktywności i kalorii.
+        </p>
+      </div>
 
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <CartesianGrid stroke="#183123" vertical={false} />
-
-            <XAxis dataKey="date" stroke="#789180" fontSize={11} />
-
-            <YAxis
-              stroke="#789180"
-              fontSize={11}
-              domain={["dataMin - 2", "dataMax + 2"]}
-            />
-
-            <Tooltip
-              contentStyle={{
-                background: "#0a1b12",
-                border: "1px solid #28523a",
-                borderRadius: 12,
-              }}
-            />
-
-            <Area
-              type="monotone"
-              dataKey="kg"
-              stroke="#78e993"
-              fill="#163c25"
-              strokeWidth={3}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="grid gap-6 xl:grid-cols-2">
+        <WeightTrendChart measurements={measurements} />
+        <ActivityWeeklyChart activities={activities} />
+        <WeeklyCaloriesChart meals={meals} goal={goal} />
+        <MeasurementTrendChart measurements={measurements} />
       </div>
     </div>
   );
@@ -3111,22 +3511,79 @@ function NutritionGoalModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const initialCalories = Number(goal?.calories_target ?? 2000);
+  const initialProteinPercent =
+    goal?.protein_target != null && initialCalories > 0
+      ? Math.round((Number(goal.protein_target) * 4 * 100) / initialCalories)
+      : 30;
+  const initialFatPercent =
+    goal?.fat_target != null && initialCalories > 0
+      ? Math.round((Number(goal.fat_target) * 9 * 100) / initialCalories)
+      : 25;
+  const initialCarbsPercent =
+    goal?.carbs_target != null && initialCalories > 0
+      ? Math.round((Number(goal.carbs_target) * 4 * 100) / initialCalories)
+      : Math.max(0, 100 - initialProteinPercent - initialFatPercent);
+
   const [form, setForm] = useState<GoalForm>({
-    calories_target: String(goal?.calories_target ?? 2000),
-    protein_target: numberToInput(goal?.protein_target ?? null),
-    fat_target: numberToInput(goal?.fat_target ?? null),
-    carbs_target: numberToInput(goal?.carbs_target ?? null),
+    calories_target: String(initialCalories),
+    protein_percent: String(initialProteinPercent),
+    fat_percent: String(initialFatPercent),
+    carbs_percent: String(initialCarbsPercent),
     include_activity_calories: goal?.include_activity_calories ?? true,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const calories = parseNumber(form.calories_target);
+  const proteinPercent = parseNumber(form.protein_percent);
+  const fatPercent = parseNumber(form.fat_percent);
+  const carbsPercent = parseNumber(form.carbs_percent);
+  const percentSum = proteinPercent + fatPercent + carbsPercent;
+
+  const calculatedProtein =
+    Number.isFinite(calories) && Number.isFinite(proteinPercent)
+      ? Math.round((calories * proteinPercent) / 100 / 4)
+      : 0;
+  const calculatedFat =
+    Number.isFinite(calories) && Number.isFinite(fatPercent)
+      ? Math.round((calories * fatPercent) / 100 / 9)
+      : 0;
+  const calculatedCarbs =
+    Number.isFinite(calories) && Number.isFinite(carbsPercent)
+      ? Math.round((calories * carbsPercent) / 100 / 4)
+      : 0;
+
+  function applySuggestedMacro() {
+    setForm((current) => ({
+      ...current,
+      protein_percent: "30",
+      fat_percent: "25",
+      carbs_percent: "45",
+    }));
+    setError("");
+  }
+
   async function save() {
     setError("");
 
-    const calories = parseNumber(form.calories_target);
     if (!Number.isFinite(calories) || calories < 800 || calories > 10000) {
       setError("Cel kalorii musi mieścić się od 800 do 10000 kcal.");
+      return;
+    }
+
+    const percentages = [proteinPercent, fatPercent, carbsPercent];
+    if (
+      percentages.some(
+        (value) => !Number.isFinite(value) || value < 0 || value > 100
+      )
+    ) {
+      setError("Każda wartość makro musi mieścić się od 0% do 100%.");
+      return;
+    }
+
+    if (Math.abs(percentSum - 100) > 0.01) {
+      setError(`Suma makro musi wynosić 100%. Obecnie wynosi ${percentSum.toFixed(1)}%.`);
       return;
     }
 
@@ -3154,9 +3611,9 @@ function NutritionGoalModal({
         {
           user_id: authData.user.id,
           calories_target: calories,
-          protein_target: nullableNumber(form.protein_target),
-          fat_target: nullableNumber(form.fat_target),
-          carbs_target: nullableNumber(form.carbs_target),
+          protein_target: calculatedProtein,
+          fat_target: calculatedFat,
+          carbs_target: calculatedCarbs,
           include_activity_calories: form.include_activity_calories,
           updated_at: new Date().toISOString(),
         },
@@ -3175,53 +3632,102 @@ function NutritionGoalModal({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 p-0 md:p-4">
       <div className="mx-auto min-h-full w-full md:flex md:items-center md:justify-center">
-        <section className="card min-h-screen w-full rounded-none p-5 md:min-h-0 md:max-w-xl md:rounded-[20px] md:p-6">
+        <section className="card min-h-screen w-full rounded-none p-5 md:min-h-0 md:max-w-2xl md:rounded-[20px] md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-black">Cel kalorii i makro</h2>
-              <p className="muted mt-1 text-sm">Ustaw dzienne wartości docelowe.</p>
+              <p className="muted mt-1 text-sm">
+                Wpisz własny podział procentowy. Aplikacja automatycznie przeliczy go na gramy.
+              </p>
             </div>
             <button type="button" className="btn btn-secondary px-3" onClick={onClose} disabled={saving}>
               <X size={18} />
             </button>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="mt-6 block text-sm">
+            <span className="mb-2 block font-bold">Dzienne kalorie</span>
+            <div className="relative">
+              <input
+                inputMode="decimal"
+                value={form.calories_target}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    calories_target: event.target.value,
+                  }))
+                }
+                placeholder="2000"
+                className="pr-20"
+              />
+              <span className="muted absolute right-4 top-1/2 -translate-y-1/2 font-bold">kcal</span>
+            </div>
+          </label>
+
+          <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/5 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-black">Proponowany podział</div>
+                <div className="muted mt-1 text-sm">
+                  Białko 30% · tłuszcze 25% · węglowodany 45%
+                </div>
+              </div>
+              <button type="button" className="btn btn-secondary" onClick={applySuggestedMacro}>
+                Ustaw proponowane
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
             {[
-              ["calories_target", "Kalorie", "kcal"],
-              ["protein_target", "Białko", "g"],
-              ["fat_target", "Tłuszcze", "g"],
-              ["carbs_target", "Węglowodany", "g"],
-            ].map(([key, label, unit]) => (
-              <label className="block text-sm" key={key}>
-                <span className="mb-2 block font-bold">{label}</span>
+              ["protein_percent", "Białko", calculatedProtein],
+              ["fat_percent", "Tłuszcze", calculatedFat],
+              ["carbs_percent", "Węglowodany", calculatedCarbs],
+            ].map(([key, label, grams]) => (
+              <label className="block text-sm" key={String(key)}>
+                <span className="mb-2 block font-bold">{String(label)}</span>
                 <div className="relative">
                   <input
                     inputMode="decimal"
                     value={form[key as keyof GoalForm] as string}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setForm((current) => ({
                         ...current,
-                        [key]: e.target.value,
+                        [key]: event.target.value,
                       }))
                     }
                     placeholder="0"
-                    className="pr-16"
+                    className="pr-12"
                   />
-                  <span className="muted absolute right-4 top-1/2 -translate-y-1/2 font-bold">{unit}</span>
+                  <span className="muted absolute right-4 top-1/2 -translate-y-1/2 font-bold">%</span>
                 </div>
+                <span className="muted mt-2 block text-xs">
+                  Około {Number(grams)} g dziennie
+                </span>
               </label>
             ))}
+          </div>
+
+          <div className={`mt-5 rounded-2xl p-4 ${Math.abs(percentSum - 100) < 0.01 ? "bg-emerald-300/10" : "bg-amber-500/10"}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-bold">Suma udziałów</span>
+              <span className="text-lg font-black">{Number.isFinite(percentSum) ? percentSum.toFixed(1) : "0.0"}%</span>
+            </div>
+            <p className="muted mt-1 text-sm">
+              {Math.abs(percentSum - 100) < 0.01
+                ? `Wyliczone cele: ${calculatedProtein} g białka, ${calculatedFat} g tłuszczu i ${calculatedCarbs} g węglowodanów.`
+                : "Białko, tłuszcze i węglowodany muszą łącznie dawać 100%."}
+            </p>
           </div>
 
           <label className="mt-5 flex items-start gap-3 rounded-2xl bg-emerald-950/50 p-4">
             <input
               type="checkbox"
               checked={form.include_activity_calories}
-              onChange={(e) =>
+              onChange={(event) =>
                 setForm((current) => ({
                   ...current,
-                  include_activity_calories: e.target.checked,
+                  include_activity_calories: event.target.checked,
                 }))
               }
               className="mt-1 h-5 w-5"
@@ -3234,11 +3740,15 @@ function NutritionGoalModal({
             </span>
           </label>
 
+          <p className="muted mt-4 text-xs">
+            Proponowany podział jest punktem startowym. Własne wartości możesz dopasować do preferencji, tolerancji diety i sposobu treningu.
+          </p>
+
           {error && <p className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
 
           <div className="mt-6 flex gap-3">
             <button type="button" className="btn btn-secondary flex-1" onClick={onClose} disabled={saving}>Anuluj</button>
-            <button type="button" className="btn btn-primary flex-1" onClick={() => void save()} disabled={saving}>
+            <button type="button" className="btn btn-primary flex-1" onClick={() => void save()} disabled={saving || Math.abs(percentSum - 100) > 0.01}>
               {saving ? "Zapisywanie…" : "Zapisz cel"}
             </button>
           </div>
