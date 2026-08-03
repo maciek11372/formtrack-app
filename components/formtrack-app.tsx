@@ -655,7 +655,10 @@ export default function FormTrackApp() {
       setLoading(false);
       return;
     }
-
+    
+    if (!profileData) {
+    throw new Error("Nie znaleziono profilu użytkownika.");
+    }
     setProfile({
       id: profileData.id,
       name: profileData.name as string,
