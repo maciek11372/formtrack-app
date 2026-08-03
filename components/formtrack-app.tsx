@@ -1304,49 +1304,135 @@ function WeightTrendChart({
 
 function WeeklyCaloriesChart({
   meals,
+  activities,
   goal,
 }: {
   meals: DbMeal[];
+  activities: DbActivity[];
   goal: NutritionGoal | null;
 }) {
   const target = Math.round(Number(goal?.calories_target ?? 2000));
-  const data = getLastDays(7).map((date) => ({
-    date: shortDate(date),
-    calories: Math.round(
+  const data = getLastDays(7).map((date) => {
+    const consumed = Math.round(
       meals
         .filter((meal) => meal.meal_date === date)
         .reduce((sum, meal) => sum + Number(meal.calories ?? 0), 0)
-    ),
-    target,
+    );
+    const burned = Math.round(
+      activities
+        .filter((activity) => activity.activity_date === date)
+        .reduce((sum, activity) => sum + Number(activity.calories_burned ?? 0), 0)
+    );
+
+    return {
+      date: shortDate(date),
+      consumed,
+      burned,
+      net: consumed > 0 ? consumed - burned : null,
+      target,
+    };
+  });
+
+  const completedDays = data.filter((item) => item.net != null);
+  const averageNet = completedDays.length
+    ? Math.round(
+        completedDays.reduce((sum, item) => sum + Number(item.net), 0) /
+          completedDays.length
+      )
+    : 0;
+  const averageConsumed = completedDays.length
+    ? Math.round(
+        completedDays.reduce((sum, item) => sum + item.consumed, 0) /
+          completedDays.length
+      )
+    : 0;
+  const averageBurned = completedDays.length
+    ? Math.round(
+        completedDays.reduce((sum, item) => sum + item.burned, 0) /
+          completedDays.length
+      )
+    : 0;
+
+  const chartData = data.map((item) => ({
+    ...item,
+    average: completedDays.length ? averageNet : null,
   }));
-  const hasMeals = data.some((item) => item.calories > 0);
 
   return (
     <section className="card p-5 md:p-6">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-black">Kalorie z 7 dni</h3>
-          <p className="muted mt-1 text-sm">Spożycie w porównaniu z celem dziennym</p>
+          <h3 className="text-lg font-black">Bilans kalorii netto — 7 dni</h3>
+          <p className="muted mt-1 text-sm">
+            Spożyte kalorie pomniejszone o zarejestrowane spalanie
+          </p>
         </div>
         <Salad size={20} className="text-emerald-300" />
       </div>
 
-      {!hasMeals ? (
-        <ChartEmpty text="Dodaj posiłki, aby zobaczyć porównanie kalorii z ostatnich 7 dni." />
+      {completedDays.length === 0 ? (
+        <ChartEmpty text="Dodaj posiłki, aby zobaczyć rzeczywisty bilans kalorii." />
       ) : (
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid stroke="#183123" vertical={false} />
-              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
-              <YAxis stroke="#789180" fontSize={11} width={52} />
-              <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} kcal`]} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="calories" name="Spożyto" fill="#78e993" radius={[6, 6, 0, 0]} />
-              <Line type="monotone" dataKey="target" name="Cel" stroke="#fbbf24" strokeWidth={2} dot={false} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        <>
+          <div className="mb-4 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+              <div className="muted text-xs">Średni bilans netto</div>
+              <div className="mt-1 font-black">{averageNet} kcal/dzień</div>
+            </div>
+            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+              <div className="muted text-xs">Średnio spożyto</div>
+              <div className="mt-1 font-black">{averageConsumed} kcal/dzień</div>
+            </div>
+            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+              <div className="muted text-xs">Średnio spalono</div>
+              <div className="mt-1 font-black">{averageBurned} kcal/dzień</div>
+            </div>
+          </div>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                <CartesianGrid stroke="#183123" vertical={false} />
+                <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+                <YAxis stroke="#789180" fontSize={11} width={52} />
+                <Tooltip
+                  contentStyle={chartTooltipStyle}
+                  formatter={(value, name) => [`${value} kcal`, name]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
+                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                />
+                <Bar
+                  dataKey="net"
+                  name="Bilans netto"
+                  fill="#78e993"
+                  radius={[6, 6, 0, 0]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="target"
+                  name="Cel"
+                  stroke="#fbbf24"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="average"
+                  name="Średnia netto"
+                  stroke="#60a5fa"
+                  strokeWidth={2}
+                  strokeDasharray="6 5"
+                  dot={false}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="muted mt-3 text-xs">
+            Dni bez zapisanych posiłków nie są liczone do średniej, żeby nie zaniżać wyniku.
+          </p>
+        </>
       )}
     </section>
   );
@@ -1393,7 +1479,10 @@ function MacroDonutChart({
                   ))}
                 </Pie>
                 <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} g`]} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
+                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -1461,18 +1550,28 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
     const dayActivities = activities.filter((activity) => activity.activity_date === date);
     return {
       date: shortDate(date),
-      minutes: dayActivities.reduce((sum, activity) => sum + Number(activity.duration_minutes ?? 0), 0),
-      calories: dayActivities.reduce((sum, activity) => sum + Number(activity.calories_burned ?? 0), 0),
+      minutes: dayActivities.reduce(
+        (sum, activity) => sum + Number(activity.duration_minutes ?? 0),
+        0
+      ),
+      calories: dayActivities.reduce(
+        (sum, activity) => sum + Number(activity.calories_burned ?? 0),
+        0
+      ),
     };
   });
   const hasData = data.some((item) => item.minutes > 0 || item.calories > 0);
+  const totalMinutes = data.reduce((sum, item) => sum + item.minutes, 0);
+  const totalCalories = data.reduce((sum, item) => sum + item.calories, 0);
 
   return (
     <section className="card p-5 md:p-6">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-lg font-black">Aktywność z 7 dni</h3>
-          <p className="muted mt-1 text-sm">Czas treningów i zarejestrowane kalorie</p>
+          <p className="muted mt-1 text-sm">
+            Spalone kalorie oraz czas treningu na jednym wykresie
+          </p>
         </div>
         <Dumbbell size={20} className="text-emerald-300" />
       </div>
@@ -1480,19 +1579,82 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
       {!hasData ? (
         <ChartEmpty text="Dodaj aktywność, aby zobaczyć tygodniowe podsumowanie." />
       ) : (
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid stroke="#183123" vertical={false} />
-              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
-              <YAxis stroke="#789180" fontSize={11} width={48} />
-              <Tooltip contentStyle={chartTooltipStyle} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="minutes" name="Minuty" fill="#78e993" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="calories" name="Kalorie" fill="#fbbf24" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <>
+          <div className="mb-4 grid grid-cols-2 gap-2">
+            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+              <div className="muted text-xs">Spalone w tygodniu</div>
+              <div className="mt-1 font-black">{Math.round(totalCalories)} kcal</div>
+            </div>
+            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+              <div className="muted text-xs">Czas aktywności</div>
+              <div className="mt-1 font-black">{Math.round(totalMinutes)} min</div>
+            </div>
+          </div>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={data} margin={{ top: 8, right: 4, left: -16, bottom: 0 }}>
+                <CartesianGrid stroke="#183123" vertical={false} />
+                <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+                <YAxis
+                  yAxisId="calories"
+                  stroke="#789180"
+                  fontSize={11}
+                  width={48}
+                  label={{
+                    value: "kcal",
+                    angle: -90,
+                    position: "insideLeft",
+                    fill: "#789180",
+                    fontSize: 11,
+                  }}
+                />
+                <YAxis
+                  yAxisId="minutes"
+                  orientation="right"
+                  stroke="#789180"
+                  fontSize={11}
+                  width={42}
+                  label={{
+                    value: "min",
+                    angle: 90,
+                    position: "insideRight",
+                    fill: "#789180",
+                    fontSize: 11,
+                  }}
+                />
+                <Tooltip
+                  contentStyle={chartTooltipStyle}
+                  formatter={(value, name) => [
+                    `${value} ${name === "Czas treningu" ? "min" : "kcal"}`,
+                    name,
+                  ]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
+                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                />
+                <Bar
+                  yAxisId="calories"
+                  dataKey="calories"
+                  name="Spalone kalorie"
+                  fill="#78e993"
+                  radius={[6, 6, 0, 0]}
+                />
+                <Line
+                  yAxisId="minutes"
+                  type="monotone"
+                  dataKey="minutes"
+                  name="Czas treningu"
+                  stroke="#fbbf24"
+                  strokeWidth={3}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </>
       )}
     </section>
   );
@@ -1687,7 +1849,7 @@ function Dashboard({
 
       <div className="grid gap-6 xl:grid-cols-2">
         <WeightTrendChart measurements={measurements} compact />
-        <WeeklyCaloriesChart meals={meals} goal={nutritionGoal} />
+        <WeeklyCaloriesChart meals={meals} activities={activities} goal={nutritionGoal} />
       </div>
 
       <div className="grid items-stretch gap-6 xl:grid-cols-2">
@@ -2312,7 +2474,7 @@ function Nutrition({
 
       <div className="grid gap-5 xl:grid-cols-2">
         <MacroDonutChart totals={totals} goal={goal} />
-        <WeeklyCaloriesChart meals={meals} goal={goal} />
+        <WeeklyCaloriesChart meals={meals} activities={activities} goal={goal} />
       </div>
 
       {dayMeals.length === 0 ? (
@@ -2767,7 +2929,7 @@ function Stats({
       <div className="grid gap-6 xl:grid-cols-2">
         <WeightTrendChart measurements={measurements} />
         <ActivityWeeklyChart activities={activities} />
-        <WeeklyCaloriesChart meals={meals} goal={goal} />
+        <WeeklyCaloriesChart meals={meals} activities={activities} goal={goal} />
         <MeasurementTrendChart measurements={measurements} />
       </div>
     </div>
