@@ -1478,7 +1478,13 @@ function MacroDonutChart({
                     <Cell key={entry.name} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} g`]} />
+                <Tooltip
+                  contentStyle={chartTooltipStyle}
+                  itemStyle={{ color: "#ecfdf5", fontWeight: 700 }}
+                  labelStyle={{ color: "#a7f3d0" }}
+                  cursor={{ fill: "rgba(16, 185, 129, 0.08)" }}
+                  formatter={(value, name) => [`${value} g`, String(name)]}
+                />
                 <Legend
                   wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
                   formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
