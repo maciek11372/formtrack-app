@@ -655,10 +655,13 @@ export default function FormTrackApp() {
       setLoading(false);
       return;
     }
-    
+
     if (!profileData) {
-    throw new Error("Nie znaleziono profilu użytkownika.");
+      setLoadError("Nie znaleziono profilu użytkownika.");
+      setLoading(false);
+      return;
     }
+
     setProfile({
       id: profileData.id,
       name: profileData.name as string,
@@ -1001,18 +1004,20 @@ export default function FormTrackApp() {
         </div>
       </aside>
 
-      <main className="safe-bottom mx-auto max-w-6xl px-4 py-5 lg:ml-64 lg:px-8">
-        <header className="mb-6">
-          <div className="muted text-xs uppercase tracking-[.2em]">
-            FormTrack
-          </div>
+      <main className="safe-bottom px-4 py-5 sm:px-6 lg:ml-64 lg:px-8 lg:py-7">
+        <div className="mx-auto w-full max-w-[1500px]">
+          <header className="mb-6 lg:mb-8">
+            <div className="muted text-xs uppercase tracking-[.2em]">
+              FormTrack
+            </div>
 
-          <h1 className="text-2xl font-black">
-            {tabs.find((item) => item[0] === tab)?.[1]}
-          </h1>
-        </header>
+            <h1 className="text-2xl font-black sm:text-3xl">
+              {tabs.find((item) => item[0] === tab)?.[1]}
+            </h1>
+          </header>
 
-        {content}
+          {content}
+        </div>
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-30 flex overflow-x-auto border-t border-emerald-900/60 bg-[#07120c]/95 p-2 backdrop-blur lg:hidden">
@@ -1165,87 +1170,91 @@ function Dashboard({
       : null;
 
   return (
-    <div className="space-y-6">
-      <section className="card p-5 md:p-7">
-        <span className="rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold text-emerald-300">
-          TWÓJ PROFIL
-        </span>
-
-        <h2 className="mt-4 text-3xl font-black">
-          Cześć, {profile.name} 👋
-        </h2>
-
-        <p className="muted mt-2">
-          Dodawaj regularne pomiary, aby śledzić zmiany masy i obwodów.
-        </p>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={onMeasure}
-            className="btn btn-primary"
-          >
-            <Plus size={18} />
-            Dodaj pomiar
-          </button>
-
-          <button
-            type="button"
-            onClick={onActivity}
-            className="btn btn-secondary"
-          >
-            <Dumbbell size={18} />
-            Dodaj aktywność
-          </button>
-        </div>
-      </section>
-
-      <section className="card p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="space-y-6 lg:space-y-7">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]">
+        <section className="card flex h-full flex-col justify-between p-5 md:p-7">
           <div>
-            <h2 className="text-lg font-black">Zapotrzebowanie energetyczne</h2>
-            <p className="muted mt-1 text-sm">
-              Wzór Mifflina–St Jeora • tryb{" "}
-              {profile.calorie_mode === "fixed" ? "stały" : "dynamiczny"}
+            <span className="rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold text-emerald-300">
+              TWÓJ PROFIL
+            </span>
+
+            <h2 className="mt-4 text-3xl font-black sm:text-4xl">
+              Cześć, {profile.name} 👋
+            </h2>
+
+            <p className="muted mt-2 max-w-xl">
+              Dodawaj regularne pomiary, aby śledzić zmiany masy i obwodów.
             </p>
           </div>
-          <div className="rounded-2xl bg-emerald-300/10 px-4 py-3 text-right">
-            <div className="muted text-xs">Cel dzienny</div>
-            <div className="text-2xl font-black">
-              {Math.round(nutritionGoal?.calories_target ?? 2000)} kcal
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={onMeasure}
+              className="btn btn-primary"
+            >
+              <Plus size={18} />
+              Dodaj pomiar
+            </button>
+
+            <button
+              type="button"
+              onClick={onActivity}
+              className="btn btn-secondary"
+            >
+              <Dumbbell size={18} />
+              Dodaj aktywność
+            </button>
+          </div>
+        </section>
+
+        <section className="card p-5 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black">Zapotrzebowanie energetyczne</h2>
+              <p className="muted mt-1 text-sm">
+                Wzór Mifflina–St Jeora • tryb{" "}
+                {profile.calorie_mode === "fixed" ? "stały" : "dynamiczny"}
+              </p>
+            </div>
+            <div className="rounded-2xl bg-emerald-300/10 px-4 py-3 text-right">
+              <div className="muted text-xs">Cel dzienny</div>
+              <div className="text-2xl font-black">
+                {Math.round(nutritionGoal?.calories_target ?? 2000)} kcal
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <NutritionMetric
-            label="BMR"
-            value={calculatedBmr != null ? `${calculatedBmr} kcal` : "—"}
-            target="spoczynek"
-          />
-          <NutritionMetric
-            label="Utrzymanie"
-            value={maintenance != null ? `${maintenance} kcal` : "—"}
-            target="szacunek"
-          />
-          <NutritionMetric
-            label="Cel"
-            value={goalLabel(profile.goal)}
-            target={`${profile.target_weight} kg`}
-          />
-          <NutritionMetric
-            label="Tempo"
-            value={
-              profile.goal === "maintain"
-                ? "utrzymanie"
-                : `${profile.weekly_rate_percent}% / tydz.`
-            }
-            target={`${profile.workouts_per_week} treningi/tydz.`}
-          />
-        </div>
-      </section>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <NutritionMetric
+              label="BMR"
+              value={calculatedBmr != null ? `${calculatedBmr} kcal` : "—"}
+              target="spoczynek"
+            />
+            <NutritionMetric
+              label="Utrzymanie"
+              value={maintenance != null ? `${maintenance} kcal` : "—"}
+              target="szacunek"
+            />
+            <NutritionMetric
+              label="Cel"
+              value={goalLabel(profile.goal)}
+              target={`${profile.target_weight} kg`}
+            />
+            <NutritionMetric
+              label="Tempo"
+              value={
+                profile.goal === "maintain"
+                  ? "utrzymanie"
+                  : `${profile.weekly_rate_percent}% / tydz.`
+              }
+              target={`${profile.workouts_per_week} treningi/tydz.`}
+            />
+          </div>
+        </section>
+      </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-4">
         <Metric
           label="Aktualna masa"
           value={latest?.weight != null ? `${latest.weight} kg` : "—"}
@@ -1276,47 +1285,49 @@ function Dashboard({
         />
       </div>
 
-      <section className="card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-black">Bilans kalorii dzisiaj</h2>
-            <p className="muted mt-1 text-sm">
-              Spożyto {consumedToday} kcal z celu {Math.round(effectiveTarget)} kcal.
-            </p>
-          </div>
-          <div
-            className={`rounded-2xl px-4 py-3 text-right ${
-              remainingToday >= 0
-                ? "bg-emerald-300/10 text-emerald-200"
-                : "bg-red-500/10 text-red-200"
-            }`}
-          >
-            <div className="text-xs font-bold uppercase tracking-wide">
-              {remainingToday >= 0 ? "Pozostało" : "Przekroczono"}
+      <div className="grid items-stretch gap-6 xl:grid-cols-2">
+        <section className="card flex h-full items-center p-5 md:p-6">
+          <div className="flex w-full flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-black">Bilans kalorii dzisiaj</h2>
+              <p className="muted mt-1 text-sm">
+                Spożyto {consumedToday} kcal z celu {Math.round(effectiveTarget)} kcal.
+              </p>
             </div>
-            <div className="text-2xl font-black">
-              {Math.abs(remainingToday)} kcal
+            <div
+              className={`rounded-2xl px-4 py-3 text-right ${
+                remainingToday >= 0
+                  ? "bg-emerald-300/10 text-emerald-200"
+                  : "bg-red-500/10 text-red-200"
+              }`}
+            >
+              <div className="text-xs font-bold uppercase tracking-wide">
+                {remainingToday >= 0 ? "Pozostało" : "Przekroczono"}
+              </div>
+              <div className="text-2xl font-black">
+                {Math.abs(remainingToday)} kcal
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {latestFullMeasurement ? (
-        <section className="card p-5">
-          <h2 className="text-lg font-black">Ostatni pomiar</h2>
-          <p className="muted mt-1 text-sm">
-            {formatDate(latestFullMeasurement.measured_at)}
-          </p>
-
-          <MeasurementValues measurement={latestFullMeasurement} compact />
         </section>
-      ) : (
-        <Empty
-          title="Tu pojawi się Twój progres"
-          text="Dodaj pierwszy pomiar masy lub obwodów."
-          icon={<Flame size={28} />}
-        />
-      )}
+
+        {latestFullMeasurement ? (
+          <section className="card h-full p-5 md:p-6">
+            <h2 className="text-lg font-black">Ostatni pomiar</h2>
+            <p className="muted mt-1 text-sm">
+              {formatDate(latestFullMeasurement.measured_at)}
+            </p>
+
+            <MeasurementValues measurement={latestFullMeasurement} compact />
+          </section>
+        ) : (
+          <Empty
+            title="Tu pojawi się Twój progres"
+            text="Dodaj pierwszy pomiar masy lub obwodów."
+            icon={<Flame size={28} />}
+          />
+        )}
+      </div>
     </div>
   );
 }
