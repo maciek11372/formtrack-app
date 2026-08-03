@@ -1,0 +1,10 @@
+{
+  "name": "FormTrack",
+  "short_name": "FormTrack",
+  "description": "Treningi, pomiary i progres",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07120c",
+  "theme_color": "#07120c",
+  "icons": []
+}
