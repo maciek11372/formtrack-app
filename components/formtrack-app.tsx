@@ -986,9 +986,9 @@ export default function FormTrackApp() {
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-emerald-900/40 bg-[#07120c]/95 p-5 lg:block">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-[#1d3927] bg-[#07140d]/95 p-5 lg:block">
         <div className="flex items-center gap-3 text-xl font-black">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-300 text-[#07120c]">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-lime-400 text-[#08110b]">
             F
           </div>
 
@@ -1003,8 +1003,8 @@ export default function FormTrackApp() {
               onClick={() => setTab(id)}
               className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-semibold ${
                 tab === id
-                  ? "bg-emerald-300 text-[#07120c]"
-                  : "text-slate-300 hover:bg-emerald-950"
+                  ? "bg-lime-400 text-[#08110b]"
+                  : "text-slate-300 hover:bg-[#102419]"
               }`}
             >
               <Icon size={20} />
@@ -1038,7 +1038,7 @@ export default function FormTrackApp() {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-emerald-900/60 bg-[#07120c]/95 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#23452f] bg-[#07140d]/95 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
         <div className="grid grid-cols-5 gap-1">
           {tabs.slice(0, 4).map(([id, label, Icon]) => (
             <button
@@ -1050,7 +1050,7 @@ export default function FormTrackApp() {
               }}
               className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium ${
                 tab === id
-                  ? "bg-emerald-300 text-[#07120c]"
+                  ? "bg-lime-400 text-[#08110b]"
                   : "text-slate-400"
               }`}
             >
@@ -1064,7 +1064,7 @@ export default function FormTrackApp() {
             onClick={() => setMobileMoreOpen((open) => !open)}
             className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium ${
               mobileMoreOpen || ["supplements", "stats", "profile"].includes(tab)
-                ? "bg-emerald-300 text-[#07120c]"
+                ? "bg-lime-400 text-[#08110b]"
                 : "text-slate-400"
             }`}
           >
@@ -1083,8 +1083,8 @@ export default function FormTrackApp() {
             onClick={() => setMobileMoreOpen(false)}
           />
 
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl border-t border-emerald-800/60 bg-[#091a11] px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
-            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-emerald-900" />
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl border-t border-[#2d543b] bg-[#0b1c12] px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl">
+            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-[#23452f]" />
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <div className="text-lg font-black">Więcej</div>
@@ -1093,7 +1093,7 @@ export default function FormTrackApp() {
               <button
                 type="button"
                 onClick={() => setMobileMoreOpen(false)}
-                className="rounded-xl border border-emerald-800/60 p-2 text-slate-300"
+                className="rounded-xl border border-[#2d543b] p-2 text-slate-300"
                 aria-label="Zamknij"
               >
                 <X size={20} />
@@ -1111,8 +1111,8 @@ export default function FormTrackApp() {
                   }}
                   className={`flex min-w-0 flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-sm font-bold ${
                     tab === id
-                      ? "border-emerald-300 bg-emerald-300 text-[#07120c]"
-                      : "border-emerald-900/70 bg-emerald-950/40 text-slate-200"
+                      ? "border-lime-400 bg-lime-400 text-[#08110b]"
+                      : "border-[#23452f] bg-[#102419] text-slate-200"
                   }`}
                 >
                   <Icon size={24} />
@@ -1229,15 +1229,15 @@ function getLastDays(count: number) {
 }
 
 const chartTooltipStyle = {
-  background: "#0a1b12",
-  border: "1px solid #28523a",
+  background: "#0F2117",
+  border: "1px solid #2A4A35",
   borderRadius: 12,
-  color: "#ecfdf5",
+  color: "#F4F7F5",
 };
 
 function ChartEmpty({ text }: { text: string }) {
   return (
-    <div className="grid h-64 place-items-center rounded-2xl border border-dashed border-emerald-900/70 bg-emerald-950/20 p-6 text-center">
+    <div className="grid h-64 place-items-center rounded-2xl border border-dashed border-[#23452f] bg-[#0d2116] p-6 text-center">
       <p className="muted max-w-sm text-sm">{text}</p>
     </div>
   );
@@ -1267,7 +1267,7 @@ function WeightTrendChart({
             {compact ? "Ostatnie pomiary" : "Do 30 ostatnich pomiarów"}
           </p>
         </div>
-        <Weight size={20} className="text-emerald-300" />
+        <Weight size={20} className="text-lime-300" />
       </div>
 
       {data.length < 2 ? (
@@ -1276,10 +1276,10 @@ function WeightTrendChart({
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid stroke="#183123" vertical={false} />
-              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+              <CartesianGrid stroke="#1B3525" vertical={false} />
+              <XAxis dataKey="date" stroke="#91A69A" fontSize={11} />
               <YAxis
-                stroke="#789180"
+                stroke="#91A69A"
                 fontSize={11}
                 domain={["dataMin - 2", "dataMax + 2"]}
                 width={48}
@@ -1289,8 +1289,8 @@ function WeightTrendChart({
                 type="monotone"
                 dataKey="value"
                 name="Masa"
-                stroke="#78e993"
-                fill="#163c25"
+                stroke="#7BE257"
+                fill="#183D22"
                 strokeWidth={3}
                 activeDot={{ r: 5 }}
               />
@@ -1367,7 +1367,7 @@ function WeeklyCaloriesChart({
             Spożyte kalorie pomniejszone o zarejestrowane spalanie
           </p>
         </div>
-        <Salad size={20} className="text-emerald-300" />
+        <Salad size={20} className="text-lime-300" />
       </div>
 
       {completedDays.length === 0 ? (
@@ -1375,15 +1375,15 @@ function WeeklyCaloriesChart({
       ) : (
         <>
           <div className="mb-4 grid gap-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+            <div className="rounded-xl border border-emerald-950 bg-[#102419]/25 p-3">
               <div className="muted text-xs">Średni bilans netto</div>
               <div className="mt-1 font-black">{averageNet} kcal/dzień</div>
             </div>
-            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+            <div className="rounded-xl border border-emerald-950 bg-[#102419]/25 p-3">
               <div className="muted text-xs">Średnio spożyto</div>
               <div className="mt-1 font-black">{averageConsumed} kcal/dzień</div>
             </div>
-            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+            <div className="rounded-xl border border-emerald-950 bg-[#102419]/25 p-3">
               <div className="muted text-xs">Średnio spalono</div>
               <div className="mt-1 font-black">{averageBurned} kcal/dzień</div>
             </div>
@@ -1392,21 +1392,21 @@ function WeeklyCaloriesChart({
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid stroke="#183123" vertical={false} />
-                <XAxis dataKey="date" stroke="#789180" fontSize={11} />
-                <YAxis stroke="#789180" fontSize={11} width={52} />
+                <CartesianGrid stroke="#1B3525" vertical={false} />
+                <XAxis dataKey="date" stroke="#91A69A" fontSize={11} />
+                <YAxis stroke="#91A69A" fontSize={11} width={52} />
                 <Tooltip
                   contentStyle={chartTooltipStyle}
                   formatter={(value, name) => [`${value} kcal`, name]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
-                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                  wrapperStyle={{ fontSize: 12, color: "#E6EFE9" }}
+                  formatter={(value) => <span style={{ color: "#E6EFE9" }}>{value}</span>}
                 />
                 <Bar
                   dataKey="net"
                   name="Bilans netto"
-                  fill="#78e993"
+                  fill="#7BE257"
                   radius={[6, 6, 0, 0]}
                 />
                 <Line
@@ -1446,7 +1446,7 @@ function MacroDonutChart({
   goal: NutritionGoal | null;
 }) {
   const data = [
-    { name: "Białko", value: Number(totals.protein.toFixed(1)), fill: "#78e993" },
+    { name: "Białko", value: Number(totals.protein.toFixed(1)), fill: "#7BE257" },
     { name: "Tłuszcze", value: Number(totals.fat.toFixed(1)), fill: "#fbbf24" },
     { name: "Węglowodany", value: Number(totals.carbs.toFixed(1)), fill: "#60a5fa" },
   ];
@@ -1480,14 +1480,14 @@ function MacroDonutChart({
                 </Pie>
                 <Tooltip
                   contentStyle={chartTooltipStyle}
-                  itemStyle={{ color: "#ecfdf5", fontWeight: 700 }}
-                  labelStyle={{ color: "#a7f3d0" }}
+                  itemStyle={{ color: "#F4F7F5", fontWeight: 700 }}
+                  labelStyle={{ color: "#B8F59C" }}
                   cursor={{ fill: "rgba(16, 185, 129, 0.08)" }}
                   formatter={(value, name) => [`${value} g`, String(name)]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
-                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                  wrapperStyle={{ fontSize: 12, color: "#E6EFE9" }}
+                  formatter={(value) => <span style={{ color: "#E6EFE9" }}>{value}</span>}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -1538,11 +1538,11 @@ function MeasurementTrendChart({ measurements }: { measurements: DbMeasurement[]
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid stroke="#183123" vertical={false} />
-              <XAxis dataKey="date" stroke="#789180" fontSize={11} />
-              <YAxis stroke="#789180" fontSize={11} domain={["dataMin - 2", "dataMax + 2"]} width={48} />
+              <CartesianGrid stroke="#1B3525" vertical={false} />
+              <XAxis dataKey="date" stroke="#91A69A" fontSize={11} />
+              <YAxis stroke="#91A69A" fontSize={11} domain={["dataMin - 2", "dataMax + 2"]} width={48} />
               <Tooltip contentStyle={chartTooltipStyle} formatter={(value) => [`${value} ${option.unit}`, option.label]} />
-              <Line type="monotone" dataKey="value" name={option.label} stroke="#78e993" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="value" name={option.label} stroke="#7BE257" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -1579,7 +1579,7 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
             Spalone kalorie oraz czas treningu na jednym wykresie
           </p>
         </div>
-        <Dumbbell size={20} className="text-emerald-300" />
+        <Dumbbell size={20} className="text-lime-300" />
       </div>
 
       {!hasData ? (
@@ -1587,11 +1587,11 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+            <div className="rounded-xl border border-emerald-950 bg-[#102419]/25 p-3">
               <div className="muted text-xs">Spalone w tygodniu</div>
               <div className="mt-1 font-black">{Math.round(totalCalories)} kcal</div>
             </div>
-            <div className="rounded-xl border border-emerald-950 bg-emerald-950/25 p-3">
+            <div className="rounded-xl border border-emerald-950 bg-[#102419]/25 p-3">
               <div className="muted text-xs">Czas aktywności</div>
               <div className="mt-1 font-black">{Math.round(totalMinutes)} min</div>
             </div>
@@ -1600,32 +1600,32 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data} margin={{ top: 8, right: 4, left: -16, bottom: 0 }}>
-                <CartesianGrid stroke="#183123" vertical={false} />
-                <XAxis dataKey="date" stroke="#789180" fontSize={11} />
+                <CartesianGrid stroke="#1B3525" vertical={false} />
+                <XAxis dataKey="date" stroke="#91A69A" fontSize={11} />
                 <YAxis
                   yAxisId="calories"
-                  stroke="#789180"
+                  stroke="#91A69A"
                   fontSize={11}
                   width={48}
                   label={{
                     value: "kcal",
                     angle: -90,
                     position: "insideLeft",
-                    fill: "#789180",
+                    fill: "#91A69A",
                     fontSize: 11,
                   }}
                 />
                 <YAxis
                   yAxisId="minutes"
                   orientation="right"
-                  stroke="#789180"
+                  stroke="#91A69A"
                   fontSize={11}
                   width={42}
                   label={{
                     value: "min",
                     angle: 90,
                     position: "insideRight",
-                    fill: "#789180",
+                    fill: "#91A69A",
                     fontSize: 11,
                   }}
                 />
@@ -1637,14 +1637,14 @@ function ActivityWeeklyChart({ activities }: { activities: DbActivity[] }) {
                   ]}
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 12, color: "#dceee2" }}
-                  formatter={(value) => <span style={{ color: "#dceee2" }}>{value}</span>}
+                  wrapperStyle={{ fontSize: 12, color: "#E6EFE9" }}
+                  formatter={(value) => <span style={{ color: "#E6EFE9" }}>{value}</span>}
                 />
                 <Bar
                   yAxisId="calories"
                   dataKey="calories"
                   name="Spalone kalorie"
-                  fill="#78e993"
+                  fill="#7BE257"
                   radius={[6, 6, 0, 0]}
                 />
                 <Line
@@ -1742,7 +1742,7 @@ function Dashboard({
       <div className="grid gap-6 2xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)]">
         <section className="card flex h-full flex-col justify-between p-5 md:p-7">
           <div>
-            <span className="rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-bold text-emerald-300">
+            <span className="rounded-full bg-lime-400/10 px-3 py-1 text-xs font-bold text-lime-300">
               TWÓJ PROFIL
             </span>
 
@@ -1785,7 +1785,7 @@ function Dashboard({
                 {profile.calorie_mode === "fixed" ? "stały" : "dynamiczny"}
               </p>
             </div>
-            <div className="rounded-2xl bg-emerald-300/10 px-4 py-3 text-right">
+            <div className="rounded-2xl bg-lime-400/10 px-4 py-3 text-right">
               <div className="muted text-xs">Cel dzienny</div>
               <div className="text-2xl font-black">
                 {Math.round(nutritionGoal?.calories_target ?? 2000)} kcal
@@ -1870,7 +1870,7 @@ function Dashboard({
             <div
               className={`rounded-2xl px-4 py-3 text-right ${
                 remainingToday >= 0
-                  ? "bg-emerald-300/10 text-emerald-200"
+                  ? "bg-lime-400/10 text-lime-200"
                   : "bg-red-500/10 text-red-200"
               }`}
             >
@@ -2026,7 +2026,7 @@ function Activities({
 
             return (
               <section className="card p-5" key={date}>
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-emerald-900/40 pb-4">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#1d3927] pb-4">
                   <div>
                     <h3 className="text-lg font-black">{formatDate(date)}</h3>
                     <p className="muted mt-1 text-sm">
@@ -2035,11 +2035,11 @@ function Activities({
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-right">
-                    <div className="rounded-xl bg-emerald-950/50 px-3 py-2">
+                    <div className="rounded-xl bg-[#102419]/50 px-3 py-2">
                       <div className="muted text-xs">Spalone razem</div>
                       <div className="font-black">{total} kcal</div>
                     </div>
-                    <div className="rounded-xl bg-emerald-950/50 px-3 py-2">
+                    <div className="rounded-xl bg-[#102419]/50 px-3 py-2">
                       <div className="muted text-xs">Kroki</div>
                       <div className="font-black">
                         {steps.toLocaleString("pl-PL")}
@@ -2052,7 +2052,7 @@ function Activities({
                   {dayActivities.map((activity) => (
                     <article
                       key={activity.id}
-                      className="rounded-2xl bg-emerald-950/35 p-4"
+                      className="rounded-2xl bg-[#102419]/35 p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -2260,7 +2260,7 @@ function Measurements({
               <MeasurementValues measurement={measurement} />
 
               {measurement.notes?.trim() && (
-                <div className="mt-4 rounded-2xl bg-emerald-950/50 p-4 text-sm text-emerald-50">
+                <div className="mt-4 rounded-2xl bg-[#102419]/50 p-4 text-sm text-emerald-50">
                   {measurement.notes}
                 </div>
               )}
@@ -2309,7 +2309,7 @@ function MeasurementValues({
       {values.map(([label, value, unit]) => (
         <div
           key={String(label)}
-          className="rounded-2xl bg-emerald-950/50 p-3"
+          className="rounded-2xl bg-[#102419]/50 p-3"
         >
           <div className="muted text-xs">{label}</div>
           <div className="mt-1 font-black">
@@ -2453,15 +2453,15 @@ function Nutrition({
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <div className="rounded-2xl bg-emerald-950/50 p-4">
+          <div className="rounded-2xl bg-[#102419]/50 p-4">
             <div className="muted text-xs">Cel bazowy</div>
             <div className="mt-1 text-xl font-black">{Math.round(baseTarget)} kcal</div>
           </div>
-          <div className="rounded-2xl bg-emerald-950/50 p-4">
+          <div className="rounded-2xl bg-[#102419]/50 p-4">
             <div className="muted text-xs">Spalone aktywnością</div>
             <div className="mt-1 text-xl font-black">{burned} kcal</div>
           </div>
-          <div className={`rounded-2xl p-4 ${remaining >= 0 ? "bg-emerald-300/10" : "bg-red-500/10"}`}>
+          <div className={`rounded-2xl p-4 ${remaining >= 0 ? "bg-lime-400/10" : "bg-red-500/10"}`}>
             <div className="muted text-xs">
               {remaining >= 0 ? "Pozostało" : "Przekroczono"}
             </div>
@@ -2549,7 +2549,7 @@ function NutritionMetric({
   target: string;
 }) {
   return (
-    <div className="rounded-2xl bg-emerald-950/50 p-4">
+    <div className="rounded-2xl bg-[#102419]/50 p-4">
       <div className="muted text-xs">{label}</div>
       <div className="mt-1 text-xl font-black">{value}</div>
       <div className="muted mt-1 text-xs">cel: {target}</div>
@@ -2755,7 +2755,7 @@ function Supplements({
               .map(({ supplement, schedule, intake }) => (
                 <article
                   key={schedule.id}
-                  className="rounded-2xl bg-emerald-950/40 p-4"
+                  className="rounded-2xl bg-[#102419] p-4"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -2831,7 +2831,7 @@ function Supplements({
                     <h3 className="mt-1 text-lg font-black">
                       {supplementName(supplement)}
                     </h3>
-                    <p className="mt-1 font-bold text-emerald-200">
+                    <p className="mt-1 font-bold text-lime-200">
                       {formatSupplementDose(supplement)}
                     </p>
                   </div>
@@ -2856,7 +2856,7 @@ function Supplements({
                 </div>
 
                 {schedule && (
-                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-emerald-950/50 p-3 text-sm">
+                  <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#102419]/50 p-3 text-sm">
                     <Bell size={16} />
                     {schedule.reminder_time.slice(0, 5)} •{" "}
                     {formatDays(schedule.days_of_week)}
@@ -2958,7 +2958,7 @@ function ProfileView({
       </div>
 
       <div className="mt-6 grid gap-3 md:grid-cols-2">
-        <div className="rounded-2xl bg-emerald-950/60 p-4">
+        <div className="rounded-2xl bg-[#102419]/60 p-4">
           <div className="muted text-xs">Cel</div>
           <div className="mt-1 font-black">{goalLabel(profile.goal)}</div>
           <div className="muted mt-1 text-sm">
@@ -2966,7 +2966,7 @@ function ProfileView({
           </div>
         </div>
 
-        <div className="rounded-2xl bg-emerald-950/60 p-4">
+        <div className="rounded-2xl bg-[#102419]/60 p-4">
           <div className="muted text-xs">Tryb kalorii</div>
           <div className="mt-1 font-black">
             {profile.calorie_mode === "fixed" ? "Stały" : "Dynamiczny"}
@@ -3004,7 +3004,7 @@ function Metric({
     <div className="card p-4">
       <div className="flex items-center justify-between">
         <span className="muted text-sm">{label}</span>
-        <Icon size={18} className="text-emerald-300" />
+        <Icon size={18} className="text-lime-300" />
       </div>
 
       <div className="mt-2 text-2xl font-black">{value}</div>
@@ -3026,7 +3026,7 @@ function Empty({
   return (
     <div className="card grid min-h-52 place-items-center p-8 text-center">
       <div>
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-300/10 text-emerald-300">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-lime-400/10 text-lime-300">
           {icon}
         </div>
 
@@ -3363,7 +3363,7 @@ function SupplementModal({
               />
             </label>
 
-            <label className="flex items-center gap-3 rounded-2xl bg-emerald-950/50 p-4 text-sm">
+            <label className="flex items-center gap-3 rounded-2xl bg-[#102419]/50 p-4 text-sm">
               <input
                 type="checkbox"
                 checked={form.notification_enabled}
@@ -3388,8 +3388,8 @@ function SupplementModal({
                   key={day.value}
                   className={`rounded-xl px-3 py-2 text-sm font-bold ${
                     form.days_of_week.includes(day.value)
-                      ? "bg-emerald-300 text-[#07120c]"
-                      : "bg-emerald-950 text-emerald-100"
+                      ? "bg-lime-400 text-[#08110b]"
+                      : "bg-[#102419] text-emerald-100"
                   }`}
                   onClick={() => toggleDay(day.value)}
                 >
@@ -3433,7 +3433,7 @@ function SupplementModal({
           {selectedCatalog && (
             <div className="mt-5 space-y-3">
               {selectedCatalog.amount_mg_equivalent != null && (
-                <p className="rounded-xl bg-emerald-950/50 p-3 text-sm">
+                <p className="rounded-xl bg-[#102419]/50 p-3 text-sm">
                   Wartość domyślna odpowiada{" "}
                   <strong>
                     {selectedCatalog.amount_mg_equivalent} mg
@@ -3832,7 +3832,7 @@ function NutritionGoalModal({
             </div>
           </label>
 
-          <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/5 p-4">
+          <div className="mt-5 rounded-2xl border border-lime-400/15 bg-lime-400/5 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="font-black">Proponowany podział</div>
@@ -3876,7 +3876,7 @@ function NutritionGoalModal({
             ))}
           </div>
 
-          <div className={`mt-5 rounded-2xl p-4 ${Math.abs(percentSum - 100) < 0.01 ? "bg-emerald-300/10" : "bg-amber-500/10"}`}>
+          <div className={`mt-5 rounded-2xl p-4 ${Math.abs(percentSum - 100) < 0.01 ? "bg-lime-400/10" : "bg-amber-500/10"}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold">Suma udziałów</span>
               <span className="text-lg font-black">{Number.isFinite(percentSum) ? percentSum.toFixed(1) : "0.0"}%</span>
@@ -3888,7 +3888,7 @@ function NutritionGoalModal({
             </p>
           </div>
 
-          <label className="mt-5 flex items-start gap-3 rounded-2xl bg-emerald-950/50 p-4">
+          <label className="mt-5 flex items-start gap-3 rounded-2xl bg-[#102419]/50 p-4">
             <input
               type="checkbox"
               checked={form.include_activity_calories}
